@@ -6,7 +6,7 @@ This will/should be scripted at some point, but for now, I am just going to take
 
 `sudo apt-get install git`
 
-## gitreceive
+## Part 1: gitreceive
 
 ```bash
 (
@@ -27,7 +27,7 @@ Modify `/home/git/receiver` to fit our needs...
 mkdir -p /home/git/tmp && cat | tar -x -C /home/git/tmp
 ```
 
-NOTE: I think we might need to create `/home/git/tmp` before while it should not...
+**NOTE**: I think we might need to create `/home/git/tmp` before while it should not...
 
 Modify `~/.ssh/config` on your local machine (if you are using a differnet port, with Vagrant, as an example):
 ```bash
