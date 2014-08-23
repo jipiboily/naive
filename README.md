@@ -29,3 +29,7 @@ My current idea for a basic version of this...
   - create databases and attach them to an app
   - scale ?
 - coreos?
+
+## Missing
+
+- history of deploys and a way to roll back
