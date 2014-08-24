@@ -13,11 +13,26 @@ My current idea for a basic version of this...
 ### Deploy process
 
 - git push
-- requiring a Dockerfile
+- how to build it:
+  - if there is a Dockerfile, use it?
+  - else, use `buildstep` to build with heroku buildpacks
 - docker build ^
 - check if app is started and up (paas.yaml, with a URL to check or something, and what to check…like “SERVER: OK”
 - switch the previous one with new one (possibly change name and/or link? No idea, yet!)
 - profit?
+
+### Possible directory structure
+
+For each app, we need to have a directory with that kind of structure:
+
+- project_name
+  - current -> this is a symlink to the latest release
+  - logs
+    - history.log (including a timestamp, the new and old SHA1)
+    - builds
+      - $(SHA1).log -> using the SHA1 of the release as the name. This is the build log.
+  - releases
+    - one directory per release, with the SHA1 as the name, containing the app's source for that release (this might actually be useless, but let's do it for now.)
 
 ## Some cool ideas I will probably not do:
 
