@@ -1,0 +1,13 @@
+#!/bin/bash
+# Arguments:
+#   repo: $1
+#   new revision: $2
+#   owner: $3
+#   RECEIVE_FINGERPRINT: $4
+
+echo $@ > /home/git/args.dump
+echo "repo: $1"
+echo "new revision: $2"
+echo "owner: $3"
+echo "RECEIVE_FINGERPRINT: $4"
+mkdir -p /home/git/tmp && cat | tar -x -C /home/git/tmp
