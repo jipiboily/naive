@@ -5,9 +5,22 @@
 #   owner: $3
 #   RECEIVE_FINGERPRINT: $4
 
-echo $@ > /home/git/args.dump
-echo "repo: $1"
-echo "new revision: $2"
-echo "owner: $3"
-echo "RECEIVE_FINGERPRINT: $4"
-mkdir -p /home/git/tmp && cat | tar -x -C /home/git/tmp
+# echo $@ > /home/git/args.dump
+# echo "repo: $1"
+# echo "new revision: $2"
+# echo "owner: $3"
+# echo "RECEIVE_FINGERPRINT: $4"
+# mkdir -p /home/git/tmp && cat | tar -x -C /home/git/tmp
+
+export PROJECT_DIR=/paas/$1
+export PROJECT_LOGS_DIR=/paas/$1/logs
+export HITORY_LOG_PATH=$PROJECT_LOGS_DIR/history.log
+export PROJECT_RELEASES_DIR=/paas/$1/releases
+export NEW_RELEASE_DIR=/paas/$1/releases/$2
+# Ensure directory structure exists
+mkdir -p $PROJECT_LOGS_DIR
+mkdir -p $PROJECT_RELEASES_DIR
+
+# send files into the new release directory
+cat | tar -x -C $NEW_RELEASE_DIR
+echo "$(date -R) - deploy $2 - owner: $3 - fingerprint: $4" >> $HITORY_LOG_PATH
