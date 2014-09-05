@@ -84,7 +84,13 @@ func (r Release) WriteNewReleaseFiles() {
 
 func (r Release) Build() {
   if r.HasDockerFile(){
-    log.Println("docker build...")
+    log.Println("Launching the docker build...")
+    // TODO: error handling
+    // TODO: output with `log`?
+    cmd := exec.Command("/usr/bin/docker", "build", "-t", r.Repository, r.CurrentReleaseDirectory())
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    cmd.Run()
   } else {
     log.Println("Buildstep stuff...")
   }
