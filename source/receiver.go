@@ -24,6 +24,7 @@ func main() {
   release.EnsureDirectoryStructureExists()
   release.WriteNewReleaseFiles()
   release.Build()
+  release.Run()
 }
 
 type Release struct {
@@ -105,6 +106,14 @@ func (r Release) HasDockerFile() bool {
     log.Println("Trying to build with a build pack...")
     return false
   }
+}
+
+// Starting the container, with the environment variables
+func (r Release) Run() {
+  // TODO: We will need to use $PORT to start stuff inside the container, for now, assuming 3000
+  cmd := exec.Command("/usr/bin/docker", "run", "-d", "-p", "3000:3000", "--name", r.Repository, r.Repository)
+  RunCommand(cmd)
+}
 
 // Abstract to run command with output and error "management"
 func RunCommand(cmd *exec.Cmd) {
