@@ -88,9 +88,7 @@ func (r Release) Build() {
     // TODO: error handling
     // TODO: output with `log`?
     cmd := exec.Command("/usr/bin/docker", "build", "-t", r.Repository, r.CurrentReleaseDirectory())
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-    cmd.Run()
+    RunCommand(cmd)
   } else {
     log.Println("Buildstep stuff...")
   }
@@ -107,4 +105,11 @@ func (r Release) HasDockerFile() bool {
     log.Println("Trying to build with a build pack...")
     return false
   }
+
+// Abstract to run command with output and error "management"
+func RunCommand(cmd *exec.Cmd) {
+  cmd.Stdout = os.Stdout
+  cmd.Stderr = os.Stderr
+  err := cmd.Run()
+  if err != nil { panic(err) }
 }
