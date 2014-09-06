@@ -1,2 +1,6 @@
 .vagrant
 .DS_Store
+
+# Those are used for development with Vagrant, locally.
+.logs
+.config
