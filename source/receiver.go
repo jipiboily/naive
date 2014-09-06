@@ -75,6 +75,7 @@ func (r Release) WriteTarFile() string {
   return tarPath
 }
 
+// This will write the files for your new release in the "current" directory
 func (r Release) WriteNewReleaseFiles() {
   tarPath := r.WriteTarFile()
   // TODO: clear the current directory before untarring
@@ -83,6 +84,7 @@ func (r Release) WriteNewReleaseFiles() {
   if err != nil { panic(err) }
 }
 
+// This will build a new container for your app
 func (r Release) Build() {
   if r.HasDockerFile(){
     log.Println("Launching the docker build...")
@@ -95,6 +97,7 @@ func (r Release) Build() {
   }
 }
 
+// Inspect the new release directory to see if there is a Dockerfile that can be used
 func (r Release) HasDockerFile() bool {
   path := fmt.Sprintf("%s/Dockerfile", r.CurrentReleaseDirectory())
   finfo, err := os.Stat(path)
