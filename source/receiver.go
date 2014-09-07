@@ -6,6 +6,9 @@ import(
   "log"
   "fmt"
   "io/ioutil"
+  "strconv"
+  "text/template"
+  "strings"
 )
 
 func main() {
@@ -20,11 +23,18 @@ func main() {
   log.Printf("Release directory: %s", release.ReleaseDirectory())
   log.Printf("Current release directory: %s", release.CurrentReleaseDirectory())
   log.Printf("New release directory: %s", release.NewReleaseDirectory())
+  log.Printf("New release name: %s", release.NewReleaseName())
+  log.Printf("Previous release name: %s", release.PreviousReleaseName())
 
   release.EnsureDirectoryStructureExists()
   release.WriteNewReleaseFiles()
   release.Build()
+  // TODO: move that later so we can have zero down time.
+  //       What is missing for that is multi-port, as the
+  //       same port can't be used more than once, obviously.
+  release.RemoveOldContainer()
   release.Run()
+  release.BumpReleaseId()
 }
 
 type Release struct {
@@ -57,6 +67,42 @@ func (r Release) CurrentReleaseDirectory() string {
 
 func (r Release) NewReleaseDirectory() string {
   return fmt.Sprintf("%s/%s", r.ReleaseDirectory(), r.NewRevision)
+}
+
+func (r Release) ReleaseVersionFilePath() string {
+  return fmt.Sprintf("%s/%s", r.ProjectDirectory(), "current_release_id")
+}
+
+func (r Release) NewReleaseName() string {
+  releaseID := strconv.FormatInt(r.NewReleaseId(), 10);
+  return fmt.Sprintf("%s-%s", r.Repository, releaseID)
+}
+
+func (r Release) PreviousReleaseName() string {
+  releaseID := strconv.FormatInt(r.PreviousReleaseId(), 10);
+  return fmt.Sprintf("%s-%s", r.Repository, releaseID)
+}
+
+func (r Release) NewReleaseId() int64 {
+  return r.PreviousReleaseId() + 1
+}
+
+func (r Release) PreviousReleaseId() int64 {
+  if _, err := os.Stat(r.ReleaseVersionFilePath()); err == nil {
+    content,_ := ioutil.ReadFile(r.ReleaseVersionFilePath())
+    releaseId, err := strconv.ParseInt(string(content), 10, 64)
+    if err != nil { panic(err) }
+    return releaseId;
+  } else {
+    return 0;
+  }
+}
+
+func (r Release) BumpReleaseId() {
+  log.Printf("Writing new release version: %s", r.NewReleaseId())
+  releaseId := strconv.FormatInt(r.PreviousReleaseId() + 1, 10)
+  err := ioutil.WriteFile(r.ReleaseVersionFilePath(), []byte(releaseId), 0640)
+  if err != nil { panic(err) }
 }
 
 func (r Release) EnsureDirectoryStructureExists() {
@@ -114,7 +160,7 @@ func (r Release) HasDockerFile() bool {
 // Starting the container, with the environment variables
 func (r Release) Run() {
   // TODO: We will need to use $PORT to start stuff inside the container, for now, assuming 3000
-  cmd := exec.Command("/usr/bin/docker", "run", "-d", "-p", "3000:3000", "--name", r.Repository, r.Repository)
+  cmd := exec.Command("/usr/bin/docker", "run", "-d", "-p", "3000:3000", "--name", r.NewReleaseName(), r.Repository)
   RunCommand(cmd)
 }
 
@@ -124,4 +170,42 @@ func RunCommand(cmd *exec.Cmd) {
   cmd.Stderr = os.Stderr
   err := cmd.Run()
   if err != nil { panic(err) }
+}
+
+func (r Release) RemoveOldContainer() {
+  cmd := exec.Command("/usr/bin/docker", "kill", r.PreviousReleaseName())
+  cmd.Run() // We don't care if it fails, at least, I am assuming the app is new or was closed
+  // TODO: This should be queued, somehow, and run a little later, to let the kill do its jobs
+  // cmd = exec.Command("/usr/bin/docker", "rm", r.PreviousReleaseName())
+  // RunCommand(cmd)
+}
+
+func (r Release) NewReleaseIP() string {
+  cmd := exec.Command("/usr/bin/docker", "inspect", "--format", "'{{.NetworkSettings.IPAddress}}'", r.NewReleaseName())
+  ipBytes, err := cmd.Output()
+  if err != nil { panic(err) }
+  return string(ipBytes)
+}
+
+func (r Release) NginxProxyPass() string {
+  cleanedIp := strings.Replace(r.NewReleaseIP(), "'", "", -1)
+  cleanedIp = strings.Replace(cleanedIp, "\n", "", -1)
+  return fmt.Sprintf("http://%s%s", cleanedIp, ":3000")
+}
+
+func (r Release) NginxServerName() string {
+  return fmt.Sprintf("server_name %s.jipiboily.net %s;", r.Repository, "http://app.jipiboily.com")
+}
+
+func (r Release) GenerateNginxConf() {
+  templatePath := "/vagrant/templates/nginx-site.conf"
+  tmpl, errTmpl := template.ParseFiles(templatePath)
+  if errTmpl != nil { panic(errTmpl) }
+
+  appConfPath := fmt.Sprintf("%s/nginx.conf", r.ProjectDirectory())
+  tmplFile, errTmplFile := os.OpenFile(appConfPath, os.O_CREATE | os.O_RDWR, 0640)
+  if errTmplFile != nil { panic(errTmplFile) }
+
+  errTmpl = tmpl.Execute(tmplFile, r)
+  if errTmpl != nil { panic(errTmpl) }
 }
