@@ -12,7 +12,7 @@ My current idea for a basic version of this...
 
 ### Deploy process
 
-- git push
+- git push (app will be created if it doesn't exists)
 - how to build it:
   - if there is a Dockerfile, use it?
   - else, use `buildstep` to build with heroku buildpacks
