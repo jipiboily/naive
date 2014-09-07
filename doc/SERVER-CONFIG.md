@@ -45,3 +45,49 @@ git push paas
 ```
 
 That's about it for part 1, we are now able to git push our app.
+
+
+## Part 2: Docker
+
+To install on a recent version on Ubuntu 14.04:
+
+```bash
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+sudo sh -c "echo deb https://get.docker.io/ubuntu docker main\
+> /etc/apt/sources.list.d/docker.list"
+sudo apt-get update
+sudo apt-get install lxc-docker
+```
+
+Let the `git` user deal with Docker.
+Source: http://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo
+
+```
+sudo groupadd docker # probably not required
+sudo gpasswd -a git docker
+sudo service docker restart
+```
+
+This can also be useful if your are working on a Vagrant box: `sudo gpasswd -a vagrant docker`
+
+## Part 3: nginx
+
+`docker pull dockerfile/nginx`
+basic, temporary version:
+`docker run -d -p 80:80 dockerfile/nginx`
+
+mkdir -p /vagrant/.config/nginx/sites-enabled
+mkdir -p /vagrant/.logs/nginx
+
+Sample nginx config:
+```
+server {
+      listen 80;
+
+      location / {
+          proxy_pass http://httpstat.us/;
+          proxy_set_header  X-Real-IP  $remote_addr;
+      }
+  }
+```
+docker run -d --name nginx -p 80:80 -v /vagrant/.config/nginx/sites-enabled:/etc/nginx/sites-enabled -v /vagrant/.logs/nginx:/var/log/nginx dockerfile/nginx
