@@ -46,7 +46,7 @@ func RootDirectory() string {
 }
 
 func (r Release) ProjectDirectory() string {
-  return fmt.Sprintf("%s/%s", RootDirectory(), r.Repository)
+  return fmt.Sprintf("%s/apps/%s", RootDirectory(), r.Repository)
 }
 
 func (r Release) LogDirectory() string {
