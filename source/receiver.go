@@ -34,6 +34,7 @@ func main() {
   //       same port can't be used more than once, obviously.
   release.RemoveOldContainer()
   release.Run()
+  release.SwitchRoute() // Switch nginx to route to this new one
   release.BumpReleaseId()
 }
 
@@ -73,6 +74,14 @@ func (r Release) ReleaseVersionFilePath() string {
   return fmt.Sprintf("%s/%s", r.ProjectDirectory(), "current_release_id")
 }
 
+func (r Release) NginxSitesEnabledPath() string {
+  return fmt.Sprintf("%s/config/nginx/sites-enabled", RootDirectory())
+}
+
+func (r Release) NginxLogsPath() string {
+  return fmt.Sprintf("%s/logs/nginx/", RootDirectory())
+}
+
 func (r Release) NewReleaseName() string {
   releaseID := strconv.FormatInt(r.NewReleaseId(), 10);
   return fmt.Sprintf("%s-%s", r.Repository, releaseID)
@@ -99,7 +108,8 @@ func (r Release) PreviousReleaseId() int64 {
 }
 
 func (r Release) BumpReleaseId() {
-  log.Printf("Writing new release version: %s", r.NewReleaseId())
+  newReleaseId := strconv.FormatInt(r.NewReleaseId() + 1, 10)
+  log.Printf("Writing new release version: %s", newReleaseId)
   releaseId := strconv.FormatInt(r.PreviousReleaseId() + 1, 10)
   err := ioutil.WriteFile(r.ReleaseVersionFilePath(), []byte(releaseId), 0640)
   if err != nil { panic(err) }
@@ -108,9 +118,12 @@ func (r Release) BumpReleaseId() {
 func (r Release) EnsureDirectoryStructureExists() {
   log.Println("Ensuring directory structure exists...")
   // TODO: remove the nil output and only output when errors occur
-  log.Println(os.MkdirAll(r.NewReleaseDirectory(), 0750))
-  log.Println(os.MkdirAll(r.CurrentReleaseDirectory(), 0750))
-  log.Println(os.MkdirAll(r.LogDirectory(), 0750))
+  // TODO: improve security on this...I would prefer 0750 at most.
+  log.Println(os.MkdirAll(r.NewReleaseDirectory(), 0755))
+  log.Println(os.MkdirAll(r.CurrentReleaseDirectory(), 0755))
+  log.Println(os.MkdirAll(r.LogDirectory(), 0755))
+  log.Println(os.MkdirAll(r.NginxSitesEnabledPath(), 0755))
+  log.Println(os.MkdirAll(r.NginxLogsPath(), 0755))
 }
 
 func (r Release) WriteTarFile() string {
@@ -172,7 +185,20 @@ func RunCommand(cmd *exec.Cmd) {
   if err != nil { panic(err) }
 }
 
+func (r Release) SwitchRoute() {
+  r.GenerateNginxConf()
+  r.EnsureNginxConfLink()
+  exec.Command("/usr/bin/docker", "start", "nginx").Output()
+  exec.Command("/usr/bin/docker", "restart", "nginx").Output()
+}
+
+func (r Release) EnsureNginxConfLink() {
+  cmd := exec.Command("/bin/cp", r.NginxConfPath(), r.NginxSymbolicLinkPath())
+  cmd.Run()
+}
+
 func (r Release) RemoveOldContainer() {
+  log.Println("Removing old container.")
   cmd := exec.Command("/usr/bin/docker", "kill", r.PreviousReleaseName())
   cmd.Run() // We don't care if it fails, at least, I am assuming the app is new or was closed
   // TODO: This should be queued, somehow, and run a little later, to let the kill do its jobs
@@ -194,16 +220,27 @@ func (r Release) NginxProxyPass() string {
 }
 
 func (r Release) NginxServerName() string {
-  return fmt.Sprintf("server_name %s.jipiboily.net %s;", r.Repository, "http://app.jipiboily.com")
+  return fmt.Sprintf("server_name localhost %s.jipiboily.net %s;", r.Repository, "http://app.jipiboily.com")
+}
+
+func (r Release) NginxConfPath() string {
+  return fmt.Sprintf("%s/nginx.conf", r.ProjectDirectory())
+}
+
+func (r Release) NginxTemplatePath() string {
+  return "/vagrant/templates/nginx-site.conf"
+}
+
+func (r Release) NginxSymbolicLinkPath() string {
+  return fmt.Sprintf("/paas/config/nginx/sites-enabled/%s.conf", r.Repository)
 }
 
 func (r Release) GenerateNginxConf() {
-  templatePath := "/vagrant/templates/nginx-site.conf"
-  tmpl, errTmpl := template.ParseFiles(templatePath)
+  log.Println("Generating routing conf.")
+  tmpl, errTmpl := template.ParseFiles(r.NginxTemplatePath())
   if errTmpl != nil { panic(errTmpl) }
 
-  appConfPath := fmt.Sprintf("%s/nginx.conf", r.ProjectDirectory())
-  tmplFile, errTmplFile := os.OpenFile(appConfPath, os.O_CREATE | os.O_RDWR, 0640)
+  tmplFile, errTmplFile := os.OpenFile(r.NginxConfPath(), os.O_CREATE | os.O_RDWR, 0644)
   if errTmplFile != nil { panic(errTmplFile) }
 
   errTmpl = tmpl.Execute(tmplFile, r)
