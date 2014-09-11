@@ -9,6 +9,7 @@
 - tests
 - better structure
   - single file still (for now), but not all should belong to the Release struct
+- rollback/clean on any failure
 
 ## Right now, I have:
 - Dockerfile being built
