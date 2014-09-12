@@ -240,7 +240,7 @@ func (r Release) GenerateNginxConf() {
   tmpl, errTmpl := template.ParseFiles(r.NginxTemplatePath())
   if errTmpl != nil { panic(errTmpl) }
 
-  tmplFile, errTmplFile := os.OpenFile(r.NginxConfPath(), os.O_CREATE | os.O_RDWR, 0644)
+  tmplFile, errTmplFile := os.OpenFile(r.NginxConfPath(), os.O_CREATE | os.O_RDWR | os.O_TRUNC, 0644)
   if errTmplFile != nil { panic(errTmplFile) }
 
   errTmpl = tmpl.Execute(tmplFile, r)
