@@ -45,6 +45,6 @@ For each app, we need to have a directory with that kind of structure:
   - scale ?
 - coreos?
 
-## Missing
+## TODO & missing
 
-- history of deploys and a way to roll back
+- See TODO.md for now.
