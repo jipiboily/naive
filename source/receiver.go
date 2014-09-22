@@ -201,9 +201,9 @@ func (r Release) RemoveOldContainer() {
   log.Println("Removing old container.")
   cmd := exec.Command("/usr/bin/docker", "kill", r.PreviousReleaseName())
   cmd.Run() // We don't care if it fails, at least, I am assuming the app is new or was closed
-  // TODO: This should be queued, somehow, and run a little later, to let the kill do its jobs
+  // TODO: This should be queued, somehow, and run a little later, only if the new one was started succesfully
   // cmd = exec.Command("/usr/bin/docker", "rm", r.PreviousReleaseName())
-  // RunCommand(cmd)
+  // cmd.Run()
 }
 
 func (r Release) NewReleaseIP() string {
