@@ -34,6 +34,16 @@ For each app, we need to have a directory with that kind of structure:
   - releases
     - one directory per release, with the SHA1 as the name, containing the app's source for that release (this might actually be useless, but let's do it for now.)
 
+## HOWTOS
+
+### Install
+
+### Create a new app
+
+- ...
+- To setup environment variables, create a file a `app.env` file at the root of the project's directory on the PaaS: `sudo vi /paas/apps/my-vocal-blorgh/app.env`. Each line will be used as is and should respect the "ENV_VAR=VALUE" format, no comment allowed or anything else.
+- ...
+
 ## Some cool ideas I will probably not do:
 
 - client tool to

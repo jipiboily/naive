@@ -9,6 +9,7 @@ import(
   "strconv"
   "text/template"
   "strings"
+  "bufio"
 )
 
 func main() {
@@ -170,10 +171,41 @@ func (r Release) HasDockerFile() bool {
   }
 }
 
+func (r Release) EnvVarFilePath() string {
+  return fmt.Sprintf("%s/app.env", r.ProjectDirectory())
+}
+
+func (r Release) GetEnvVars() []string {
+  log.Println("Reading env vars")
+  file, errOpen := os.Open(r.EnvVarFilePath())
+  var returnValue []string
+  if errOpen != nil {
+    log.Println("No app.env present")
+    return returnValue
+  }
+
+  scanner := bufio.NewScanner(file)
+  for scanner.Scan() {
+    returnValue = append(returnValue, "-e")
+    returnValue = append(returnValue, scanner.Text())
+  }
+
+  if err := scanner.Err(); err != nil {
+      log.Fatal(err)
+  }
+  defer file.Close()
+
+  return returnValue
+}
+
 // Starting the container, with the environment variables
 func (r Release) Run() {
   // TODO: We will need to use $PORT to start stuff inside the container, for now, assuming 3000
-  cmd := exec.Command("/usr/bin/docker", "run", "-d", "-p", "3000:3000", "--name", r.NewReleaseName(), r.Repository)
+  dockerParams := []string{"run", "-d"}
+  dockerParams = append(dockerParams, r.GetEnvVars()...)
+  dockerParams = append(dockerParams, []string{"-p", "3000:3000", "--name", r.NewReleaseName(), r.Repository}...)
+
+  cmd := exec.Command("/usr/bin/docker", dockerParams...)
   RunCommand(cmd)
 }
 
