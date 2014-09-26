@@ -10,6 +10,7 @@ import(
   "text/template"
   "strings"
   "bufio"
+  "./project_config"
 )
 
 func main() {
@@ -29,6 +30,7 @@ func main() {
 
   release.EnsureDirectoryStructureExists()
   release.WriteNewReleaseFiles()
+  project_config.Parse(release.CurrentReleaseDirectory())
   release.Build()
   // TODO: move that later so we can have zero down time.
   //       What is missing for that is multi-port, as the

@@ -1,0 +1,6 @@
+{
+  "domain": {
+    "main": "example.com",
+    "redirects": ["www.example.com", "www2.example.com"]
+  }
+}
