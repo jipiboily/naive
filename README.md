@@ -36,6 +36,10 @@ This is not final, but my current idea for a basic version of this...
 - To setup environment variables, create a file a `app.env` file at the root of the project's directory on the server: `sudo vi /paas/apps/my-project-name/app.env`. Each line will be used as is and should respect the "ENV_VAR=VALUE" format, no comment allowed or anything else.
 - ...
 
+### Configuration
+
+Some of the configuration can done via a `naive.json` file. See in the doc directory of his project for a sample. You can configure the domain there.
+
 ## Some cool ideas I will probably not do:
 
 - client tool to

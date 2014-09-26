@@ -25,7 +25,7 @@ func (conf *NaiveConf) FromJSON(file string) error {
 }
 
 func Parse(projectPath string) NaiveConf {
-    jsonPath := fmt.Sprintf("%s/naive.conf", projectPath)
+    jsonPath := fmt.Sprintf("%s/naive.json", projectPath)
 
     //Setting up a struct where will place our data that we extract
     JSONStruct := NaiveConf{}

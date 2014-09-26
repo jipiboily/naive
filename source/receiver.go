@@ -30,7 +30,7 @@ func main() {
 
   release.EnsureDirectoryStructureExists()
   release.WriteNewReleaseFiles()
-  project_config.Parse(release.CurrentReleaseDirectory())
+  release.ProjectConfig = project_config.Parse(release.CurrentReleaseDirectory())
   release.Build()
   // TODO: move that later so we can have zero down time.
   //       What is missing for that is multi-port, as the
@@ -43,6 +43,7 @@ func main() {
 
 type Release struct {
   Repository, NewRevision, Owner, Fingerprint string;
+  ProjectConfig project_config.NaiveConf
 }
 
 func RootDirectory() string {
@@ -254,7 +255,8 @@ func (r Release) NginxProxyPass() string {
 }
 
 func (r Release) NginxServerName() string {
-  return fmt.Sprintf("server_name localhost %s.jipiboily.net %s;", r.Repository, "http://app.jipiboily.com")
+  // TODO setup some wildcard domain stuff to replace my jipiboily.net here
+  return fmt.Sprintf("%s.jipiboily.net %s", r.Repository, r.ProjectConfig.Domain.Main)
 }
 
 func (r Release) NginxConfPath() string {
