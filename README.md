@@ -40,6 +40,10 @@ This is not final, but my current idea for a basic version of this...
 
 Some of the configuration can done via a `naive.json` file. See in the doc directory of his project for a sample. You can configure the domain there.
 
+### You need a one-off container to run ad-hoc scripts or migrations?
+
+`docker run -i -t my-vocal-blorgh:latest /bin/bash` where `my-vocal-blorgh` is the name of your project. Some command line tool would be great later, but this is what you've got for now.
+
 ## Some cool ideas I will probably not do:
 
 - client tool to
