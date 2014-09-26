@@ -259,6 +259,14 @@ func (r Release) NginxServerName() string {
   return fmt.Sprintf("%s.jipiboily.net %s", r.Repository, r.ProjectConfig.Domain.Main)
 }
 
+func (r Release) NginxRedirectNames() string {
+  return strings.Join(r.ProjectConfig.Domain.Redirects, " ")
+}
+
+func (r Release) ProjectConfHasRedirects() bool {
+  return len(r.ProjectConfig.Domain.Redirects) > 0
+}
+
 func (r Release) NginxConfPath() string {
   return fmt.Sprintf("%s/nginx.conf", r.ProjectDirectory())
 }
