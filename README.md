@@ -44,7 +44,7 @@ Note that the redirected domains are optional.
 
 ### You need a one-off container to run ad-hoc scripts or migrations?
 
-`docker run -i -t my-vocal-blorgh:latest /bin/bash` where `my-vocal-blorgh` is the name of your project. Some command line tool would be great later, but this is what you've got for now.
+`docker run -i -rm -t my-vocal-blorgh:latest /bin/bash` where `my-vocal-blorgh` is the name of your project. Some command line tool would be great later, but this is what you've got for now.
 
 ## Some cool ideas I will probably not do:
 
