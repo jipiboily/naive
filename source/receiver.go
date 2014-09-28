@@ -47,7 +47,7 @@ type Release struct {
 }
 
 func RootDirectory() string {
-  return "/paas"
+  return "/naive"
 }
 
 func (r Release) ProjectDirectory() string {
@@ -79,11 +79,11 @@ func (r Release) ReleaseVersionFilePath() string {
 }
 
 func (r Release) NginxSitesEnabledPath() string {
-  return fmt.Sprintf("%s/config/nginx/sites-enabled", RootDirectory())
+  return fmt.Sprintf("%s/nginx/config/sites-enabled", RootDirectory())
 }
 
 func (r Release) NginxLogsPath() string {
-  return fmt.Sprintf("%s/logs/nginx/", RootDirectory())
+  return fmt.Sprintf("%s/nginx/logs/", RootDirectory())
 }
 
 func (r Release) NewReleaseName() string {
@@ -272,11 +272,12 @@ func (r Release) NginxConfPath() string {
 }
 
 func (r Release) NginxTemplatePath() string {
-  return "/vagrant/templates/nginx-site.conf"
+  return "/naive/templates/nginx-site.conf"
 }
 
 func (r Release) NginxSymbolicLinkPath() string {
-  return fmt.Sprintf("/paas/config/nginx/sites-enabled/%s.conf", r.Repository)
+
+  return fmt.Sprintf("%s/%s.conf", r.NginxSitesEnabledPath(), r.Repository)
 }
 
 func (r Release) GenerateNginxConf() {
