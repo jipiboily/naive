@@ -16,7 +16,7 @@ This will/should be scripted at some point, but for now, I am just going to take
     && sudo chmod +x gitreceive
 )
 
-`sudo gitreceive init`
+sudo gitreceive init
 ```
 
 ### Step 2: setup receiver script
@@ -90,4 +90,5 @@ server {
       }
   }
 ```
-docker run -d --name nginx -p 80:80 -v /vagrant/.config/nginx/sites-enabled:/etc/nginx/sites-enabled -v /vagrant/.logs/nginx:/var/log/nginx dockerfile/nginx
+chown git:git /vagrant/.config/nginx/sites-enabled/
+docker run -d --name nginx -p 80:80 -v /paas/config/nginx/sites-enabled:/etc/nginx/sites-enabled -v /paas/logs/nginx/:/var/log/nginx dockerfile/nginx
